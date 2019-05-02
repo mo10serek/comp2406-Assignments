@@ -1,0 +1,91 @@
+
+<!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+<div class="modal-dialog" role="document">
+    <div class="modal-content">
+    <div class="modal-header">
+        <button type="button" class="close" id="closeUploadImage" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">Product image</h4>
+    </div>
+    <form id="uploadForm" action="/dashboard/media-upload" method="POST" enctype="multipart/form-data">
+        <div class="modal-body">
+                <div class="file-upload-wrapper">
+                    <div class="upload-btn">
+                        <img id="uploaded-image" class="uploaded-image-preview" src="" alt="" style="display:none;">
+                        <input type="file" name="productImage" id="productImage">
+                    </div>
+                    <div class="upload-photo-description">Maximum upload file size: 10 MB. Best picture size is 1000px x 1500px.<br>You can only upload jpg/jpeg/png</div>
+                    <div class="upload-status"><span id="file-upload-status"></span></div>
+
+                    <div><a href="#" onclick="sendData()" class="btn btn-primary upload-photo">Upload</a></div>
+                </div>
+        </div>
+        
+    </form>
+    <script>
+        function sendData(){
+            var data = new FormData();
+            var file = document.getElementById('productImage').files[0];
+            data.append("productImage", file);
+
+            var xhr = new XMLHttpRequest();
+
+            xhr.addEventListener("readystatechange", function () {
+                if (this.readyState === 4 && this.responseText) {
+                    console.log("Response: ", this.responseText)
+
+                    if(this.responseText === "Error"){
+                        document.getElementById('file-upload-status').innerHTML = "Error occured, please upload again";
+                        document.getElementById('file-upload-status').style.color="red";
+                        document.getElementById('file-upload-status').style.marginTop="20px";
+                        document.getElementById('file-upload-status').style.display="block";
+                    }
+                    else{
+                        document.getElementById('file-upload-status').innerHTML = "Image uploaded successfuly";
+                        document.getElementById('file-upload-status').style.color="green";
+                        document.getElementById('file-upload-status').style.marginTop="20px";
+                        document.getElementById('file-upload-status').style.display="block";
+                        var responseMessage = JSON.parse(this.responseText);
+                        var filePath
+                        if (window.location.hostname == "localhost")
+                        {
+                            filePath = window.location.protocol + "//" + window.location.hostname + ":3000" + "/uploads/" + responseMessage.filename;
+                        }
+                        else
+                        {
+                            filePath = window.location.protocol + "//" + window.location.hostname + "/uploads/" + responseMessage.filename;
+                        }
+                        filePath = encodeURI(filePath)
+                        document.getElementById('imagePath').value = filePath;
+                        document.getElementById('uploaded-image').src = filePath;
+                        document.getElementById('uploaded-image').style.display="block";
+                        document.getElementById("closeUploadImage").click()
+                        if (document.getElementById("preview-product-image"))
+                        {
+                            updatePreviewBox('imagePath', 'preview-product-image')
+                        }
+                    }
+                    
+                }
+            });
+
+            
+
+            xhr.open("POST", "/dashboard/image-upload", true);
+            
+            xhr.onerror = function(e) {
+                console.log('Error');
+                console.log(e);
+            };
+            xhr.onload = function() {
+                console.log(this.statusText);
+            };
+
+            xhr.send(data);
+        }
+    </script>
+    
+    </div>
+</div>
+</div>
+<!-- Modal -->
